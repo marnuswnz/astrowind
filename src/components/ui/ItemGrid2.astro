@@ -1,59 +1,75 @@
----
-import type { ItemGrid as Props } from '~/types';
-import { Icon } from 'astro-icon/components';
-import { twMerge } from 'tailwind-merge';
-import Button from './Button.astro';
+--- 
+import { twMerge } from 'tailwind-merge'; 
+import Button from './Button.astro'; 
 
-const { items = [], columns, defaultIcon = '', classes = {} } = Astro.props;
+const { items = [], columns, classes = {} } = Astro.props; 
 
-const {
-  container: containerClass = '',
-  // container: containerClass = "sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-  panel: panelClass = '',
-  title: titleClass = '',
-  description: descriptionClass = '',
-  icon: defaultIconClass = 'text-primary',
+// Define the type for itemClasses 
+type ItemClasses = {
+  panel?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+};
+
+const { 
+  container: containerClass = '', 
+  panel: panelClass = '', 
+  title: titleClass = '', 
+  description: descriptionClass = '', 
 } = classes;
----
 
-{
-  items && (
-    <div
-      class={twMerge(
-        `grid gap-8 gap-x-12 sm:gap-y-8 ${
-          columns === 4
-            ? 'lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2'
-            : columns === 3
-              ? 'lg:grid-cols-3 sm:grid-cols-2'
-              : columns === 2
-                ? 'sm:grid-cols-2 '
-                : ''
-        }`,
-        containerClass
-      )}
-    >
-      {items.map(({ title, description, icon, callToAction, classes: itemClasses = {} }) => (
-        <div
-          class={twMerge(
-            'relative flex flex-col intersect-once intersect-quarter intercept-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade',
-            panelClass,
-            itemClasses?.panel
-          )}
+--- 
+
+{Array.isArray(items) && items.length > 0 ? ( 
+  <div
+    class={twMerge(
+      `grid gap-8 gap-x-12 sm:gap-y-8 ${
+        columns === 4
+          ? 'lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2'
+          : columns === 3
+          ? 'lg:grid-cols-3 sm:grid-cols-2'
+          : columns === 2
+          ? 'sm:grid-cols-2 '
+          : ''
+      }`,
+      containerClass
+    )}
+  >
+    {items.map(({ regionName, regionTagline, regionImages, classes: itemClasses = {} }) => {
+      // Ensure regionName exists before using toLowerCase
+      const slug = regionName ? regionName.toLowerCase().replace(/\s+/g, '-') : '';
+      
+      return (
+        <a
+          href={`/beachquest-cities/${slug}`}
+          class="flex flex-col items-center hover:scale-105 transform transition-all duration-300 ease-in-out"
         >
-          {(icon || defaultIcon) && (
-            <Icon name={icon || defaultIcon} class={twMerge('mb-2 w-10 h-10', defaultIconClass, itemClasses?.icon)} />
-          )}
-          <div class={twMerge('text-xl font-bold', titleClass, itemClasses?.title)}>{title}</div>
-          {description && (
-            <p class={twMerge('text-muted mt-2', descriptionClass, itemClasses?.description)} set:html={description} />
-          )}
-          {callToAction && (
-            <div class="mt-2">
-              <Button {...callToAction} />
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
+          <div
+            class={twMerge(
+              'rounded-lg shadow-lg p-6 bg-white dark:bg-slate-900 hover:bg-gray-200 dark:hover:bg-slate-700',
+              itemClasses.panel || ''
+            )}
+          >
+            {/* Render Region Image */}
+            {regionImages && regionImages.length > 0 ? (
+              <img
+                src={regionImages[0].url}
+                alt={regionName}
+                class="w-full h-40 object-cover rounded-lg mb-4"
+              />
+            ) : (
+              <div class="w-full h-40 bg-gray-200 rounded-lg mb-4">No image available</div>
+            )}
+            {/* Render Region Name */}
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{regionName}</h3>
+            {/* Render Region Tagline */}
+            <p class="text-sm text-gray-600 dark:text-gray-300">{regionTagline}</p>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+) : (
+  <p>No items to display.</p>
+)}

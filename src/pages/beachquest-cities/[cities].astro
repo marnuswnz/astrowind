@@ -1,0 +1,69 @@
+import { fetchGraphQL } from '~/lib/fetchGraphQL'; // Import fetchGraphQL function
+import { fetchCitiesData } from '~/lib/fetchCitiesData'; // Utility to fetch city data based on region
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+
+// Access dynamic route parameter (slug) from URL
+const { slug } = Astro.params;
+
+// Fetch cities data for the specific region
+const cities = await fetchCitiesData(slug);
+
+// getStaticPaths: Generate static paths at build time for dynamic routes
+export async function getStaticPaths() {
+  const query = `
+    query {
+      regions {
+        slug
+      }
+    }
+  `;
+
+  // Fetch region slugs from Hygraph using fetchGraphQL function
+  const data = await fetchGraphQL(query);
+  const regions = data?.regions || [];
+
+  // Generate paths dynamically from the regions fetched from Hygraph
+  const paths = regions.map((region) => ({
+    params: { slug: region.slug }, // Ensure this matches the dynamic part of the URL
+  }));
+
+  return paths; // Returning the paths array directly
+}
+---
+
+<Layout>
+  <!-- Hero Widget -->
+  <Hero
+    tagline={`Cities in ${slug}`}
+    title={`Explore the best cities in ${slug}`}
+    subtitle={`Discover vibrant cities in the ${slug} region.`}
+    actions={[{ variant: 'primary', target: '_blank', text: 'Start exploring', href: '/' }]}
+    image={{
+      src: 'https://via.placeholder.com/1200x400', // Placeholder image, replace it with dynamic image if available
+      alt: `${slug} Region Hero Image`,
+    }}
+  />
+
+  <!-- Cities List -->
+  <div class="max-w-7xl mx-auto mt-8">
+    <h2 class="text-2xl font-semibold mb-6">Cities in {slug}</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {cities.length > 0 ? (
+        cities.map((city) => (
+          <div class="border rounded-lg p-6 bg-white dark:bg-slate-800 hover:scale-105 transition-all duration-300 ease-in-out">
+            <img
+              src={city.cityImages[0]?.url || 'https://via.placeholder.com/400x300'} // Fallback image if no image is available
+              alt={city.cityName}
+              class="w-full h-40 object-cover rounded-lg mb-4"
+            />
+            <h3 class="text-lg font-semibold">{city.cityName}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">{city.cityTagline}</p>
+          </div>
+        ))
+      ) : (
+        <p>No cities found for this region.</p>
+      )}
+    </div>
+  </div>
+</Layout>

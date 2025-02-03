@@ -1,0 +1,43 @@
+---
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import Layout from '~/layouts/PageLayout.astro';
+import { fetchRegionsData } from '~/lib/fetchRegionsData.js';  // Import the function to fetch data dynamically
+
+const metadata = {
+  title: 'Beach Regions of Australia',
+};
+
+// Fetch the regions data dynamically
+const regions = await fetchRegionsData();  // Fetch data from Hygraph
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Widget ******************* -->
+  <Hero
+    tagline="Beach Regions"
+    title="Explore the Best Beaches in Australia"
+    subtitle="From the golden sands of Queensland to the serene beaches of Tasmania, discover your perfect beach getaway."
+    actions={[{ variant: 'primary', target: '_blank', text: 'Start exploring', href: '/' }]}
+    image={{
+      src: 'https://plus.unsplash.com/premium_photo-1697730198238-48ee2f2fe1b7?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      alt: 'Beach Regions Hero Image',
+    }}
+  />
+
+  <!-- Features2 Widget ************** -->
+ <Features2
+  title="Explore Australia's Beach Regions"
+  subtitle="Discover the top beach destinations in Australia, each offering unique experiences."
+  columns={3}
+  items={regions}
+/>
+
+  <!-- CallToAction Widget *********** -->
+  <CallToAction
+    actions={[{ variant: 'primary', text: 'Start exploring', href: '/beaches' }]}
+    title="Plan your next beach adventure"
+    subtitle="Whether you're seeking adventure or relaxation, find the perfect beach for your next getaway."
+  />
+</Layout>
